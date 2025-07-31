@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sebuah Petualangan Untukmu ❤️</title>
+    
+    <!-- Menggunakan Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Menggunakan Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Library untuk efek confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden; /* Mencegah scroll yang tidak diinginkan */
+        }
+        .font-pacifico {
+            font-family: 'Pacifico', cursive;
+        }
+        /* Style untuk layar/halaman */
+        .screen {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            transition: opacity 0.7s ease-in-out, transform 0.7s ease-in-out;
+        }
+        /* State untuk menyembunyikan layar */
+        .screen.hidden {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+        /* Animasi hati yang ditemukan */
+        .found-heart {
+            animation: found-animation 0.5s ease-out forwards;
+        }
+        @keyframes found-animation {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-rose-100 to-pink-200">
+
+    <!-- Musik Latar Belakang -->
+    <!-- Ganti src dengan link musik lain jika mau -->
+    <audio id="background-music" loop>
+        <source src="https://open.spotify.com/playlist/2fo2ZetnataFYKEo7NMRNR" type="audio/mpeg">
+    </audio>
+
+    <!-- KONTEN WEBSITE -->
+    <div class="relative w-full h-screen">
+
+        <!-- ===== LAYAR 1: SELAMAT DATANG ===== -->
+        <div id="welcome-screen" class="screen">
+            <div class="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md w-full">
+                <h1 class="font-pacifico text-4xl text-rose-500 mb-4">Buat kamu, Teristimewa</h1>
+                <p class="text-gray-600 mb-8">Di hari yang spesial ini, aku udah nyiapin games petualangan kecil. Ikuti ya bull!</p>
+                <button id="start-adventure-button" class="bg-rose-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    Mulai Petualangan legooo??!! ✨
+                </button>
+            </div>
+        </div>
+        
+        <!-- ===== LAYAR 2: INPUT NAMA ===== -->
+        <div id="name-screen" class="screen hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md w-full">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4">etss santaii sebuting dongg nama panggilan nyaa ...</h2>
+                <p class="text-gray-600 mb-6">Siapa nama panggilan kesayanganmu?</p>
+                <form id="name-form" class="flex flex-col items-center">
+                    <input type="text" id="name-input" placeholder="Tulis di sini..." class="w-full max-w-xs p-3 border-2 border-rose-200 rounded-lg text-center focus:border-rose-400 focus:ring-0 outline-none transition" required>
+                    <button type="submit" class="mt-6 bg-rose-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300">
+                        Lanjutkan
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ===== LAYAR 3: PENJELASAN MISI ===== -->
+        <div id="quest-screen" class="screen hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md w-full">
+                <h1 class="font-pacifico text-3xl text-rose-500 mb-4">Haii, <span id="display-name-1"></span>!</h1>
+                <p class="text-gray-600 mb-6">Misi buatt kamuu sederhana: klik aja yaa love nyaa gampangg okee !</p>
+                <button id="start-game-button" class="bg-rose-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    Aku Siap!
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== LAYAR 4: PERMAINAN MENCARI HATI ===== -->
+        <div id="game-screen" class="screen hidden">
+            <!-- Area Game -->
+            <div id="game-area" class="relative w-full h-full max-w-4xl max-h-[80vh] bg-rose-50/50 rounded-2xl shadow-inner overflow-hidden">
+                <!-- Hati-hati akan muncul di sini via JavaScript -->
+            </div>
+            <!-- HUD (Heads-Up Display) -->
+            <div class="absolute bottom-5 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-sm p-3 px-5 rounded-full shadow-lg">
+                <p class="font-bold text-gray-700">Hati Ditemukan: <span id="hearts-found-counter">0</span> / <span id="total-hearts-counter"></span></p>
+            </div>
+        </div>
+
+        <!-- ===== LAYAR 5: HADIAH (PESAN) ===== -->
+        <div id="final-screen" class="screen hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md w-full">
+                <h1 class="font-pacifico text-4xl text-rose-500 mb-4">Terima Kasih, <span id="display-name-2"></span>!</h1>
+                <p class="text-gray-700 leading-relaxed text-left bg-rose-50 p-6 rounded-lg border-l-4 border-rose-400">
+                    "Di antara sekian banyak usahamu, terima kasih sudah mau menyelipkan aku bahkan sampai ke titik yang sangat diusahakan. Aku tahu, perjalananmu untuk sampai di titik ini mendapatkan dan membangun hidup kamuu bukan hal yang mudah. Tapi kamu terus berjuang tanpa henti, dan aku benar-benar bangga. Aku selalu mendoakanmu. Sehat selalu yaa."
+                </p>
+                <p class="mt-8 font-bold text-lg text-pink-600">
+                    Happy Girlfriend's Day, Sayangku! 🎉
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- PENGATURAN GAME ---
+        const TOTAL_HEARTS = 7; // Ubah jumlah hati yang ingin disembunyikan
+
+        // --- ELEMEN HTML ---
+        const screens = {
+            welcome: document.getElementById('welcome-screen'),
+            name: document.getElementById('name-screen'),
+            quest: document.getElementById('quest-screen'),
+            game: document.getElementById('game-screen'),
+            final: document.getElementById('final-screen'),
+        };
+
+        const startAdventureButton = document.getElementById('start-adventure-button');
+        const nameForm = document.getElementById('name-form');
+        const nameInput = document.getElementById('name-input');
+        const startGameButton = document.getElementById('start-game-button');
+        
+        const displayName1 = document.getElementById('display-name-1');
+        const displayName2 = document.getElementById('display-name-2');
+        
+        const gameArea = document.getElementById('game-area');
+        const heartsFoundCounter = document.getElementById('hearts-found-counter');
+        const totalHeartsCounter = document.getElementById('total-hearts-counter');
+        
+        const backgroundMusic = document.getElementById('background-music');
+        let girlfriendName = "Sayang"; // Default name
+        let heartsFound = 0;
+
+        // --- FUNGSI NAVIGASI LAYAR ---
+        function showScreen(screenName) {
+            Object.values(screens).forEach(screen => screen.classList.add('hidden'));
+            screens[screenName].classList.remove('hidden');
+        }
+
+        // --- EVENT LISTENERS ---
+        startAdventureButton.addEventListener('click', () => {
+            backgroundMusic.play().catch(e => console.log("Autoplay ditolak oleh browser, butuh interaksi user."));
+            showScreen('name');
+        });
+
+        nameForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (nameInput.value.trim() !== '') {
+                girlfriendName = nameInput.value.trim();
+                displayName1.textContent = girlfriendName;
+                displayName2.textContent = girlfriendName;
+                showScreen('quest');
+            }
+        });
+        
+        startGameButton.addEventListener('click', () => {
+            setupGame();
+            showScreen('game');
+        });
+
+        // --- LOGIKA PERMAINAN ---
+        function setupGame() {
+            totalHeartsCounter.textContent = TOTAL_HEARTS;
+            heartsFound = 0;
+            heartsFoundCounter.textContent = heartsFound;
+            gameArea.innerHTML = ''; // Bersihkan area game
+
+            for (let i = 0; i < TOTAL_HEARTS; i++) {
+                const heart = document.createElement('button');
+                heart.innerHTML = '❤️';
+                heart.className = 'absolute text-4xl transform transition-transform duration-200 hover:scale-125';
+                
+                // Posisi acak di dalam area game
+                heart.style.top = `${Math.random() * 85 + 5}%`; // 5% to 90%
+                heart.style.left = `${Math.random() * 90 + 5}%`; // 5% to 95%
+
+                heart.addEventListener('click', () => {
+                    heartsFound++;
+                    heartsFoundCounter.textContent = heartsFound;
+                    
+                    heart.disabled = true;
+                    heart.classList.add('found-heart');
+
+                    if (heartsFound === TOTAL_HEARTS) {
+                        setTimeout(showFinalMessage, 800); // Beri jeda sebelum ke layar akhir
+                    }
+                });
+                gameArea.appendChild(heart);
+            }
+        }
+        
+        // --- FUNGSI AKHIR & CONFETTI ---
+        function showFinalMessage() {
+            showScreen('final');
+            launchConfetti();
+        }
+
+        function launchConfetti() {
+            const duration = 5 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+
+            function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+
+            const interval = setInterval(() => {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+
+                const particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+    </script>
+</body>
+</html>
